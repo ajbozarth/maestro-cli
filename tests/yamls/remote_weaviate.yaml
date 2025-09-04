@@ -1,0 +1,12 @@
+apiVersion: maestro/v1alpha1
+kind: VectorDatabase
+metadata:
+  name: test_remote_weaviate
+  labels:
+    app: testdb
+spec:
+  type: weaviate
+  uri: {{WEAVIATE_URL}}
+  collection_name: test_collection
+  embedding: text-embedding-3-small
+  mode: remote
