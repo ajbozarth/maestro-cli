@@ -84,6 +84,36 @@ The maestro CLI is now fully migrated and ready for use with:
 - Comprehensive test coverage
 - Updated documentation and examples
 - Proper environment variable configuration
+- Complete CI/CD pipeline with GitHub Actions
+
+## ✅ CI/CD Setup (Latest Addition)
+
+### GitHub Actions Workflows Created
+
+- **`ci.yml`** - Main CI pipeline that orchestrates lint → build → test
+- **`lint.yml`** - Dedicated code quality and linting workflow
+- **`build.yml`** - Build verification with matrix testing across Go versions
+- **`test.yml`** - Comprehensive test suite execution
+- **`.github/validate-workflows.sh`** - Workflow validation script
+
+### Workflow Features
+
+- **Triggers**: Push to main/develop, PRs, manual dispatch
+- **Matrix Testing**: Go 1.21, 1.22, 1.23
+- **Cross-Platform**: Ubuntu, Windows, macOS builds
+- **Artifact Upload**: Build artifacts and test results preserved
+- **Parallel Execution**: Individual workflows run in parallel
+- **Sequential Dependencies**: Main CI ensures proper order
+
+### Local Development
+
+```bash
+# Run complete CI pipeline locally
+./tools/lint.sh && ./build.sh && ./test.sh
+
+# Validate workflows
+./.github/validate-workflows.sh
+```
 
 ---
 
