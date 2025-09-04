@@ -53,6 +53,14 @@ A command-line interface for managing vector databases and their resources with 
 - **[User Guide](docs/USER_GUIDE.md)** - Comprehensive getting started guide with examples
 - **[TODOs.md](TODOs.md)** - Documentation of completed migration tasks
 - **[USAGE.md](USAGE.md)** - Detailed command reference and examples
+- **[GitHub Actions](.github/workflows/README.md)** - CI/CD workflow documentation
+
+## CI/CD Status
+
+[![CI](https://github.com/your-org/maestro-cli/workflows/CI/badge.svg)](https://github.com/your-org/maestro-cli/actions/workflows/ci.yml)
+[![Lint](https://github.com/your-org/maestro-cli/workflows/Lint/badge.svg)](https://github.com/your-org/maestro-cli/actions/workflows/lint.yml)
+[![Build](https://github.com/your-org/maestro-cli/workflows/Build/badge.svg)](https://github.com/your-org/maestro-cli/actions/workflows/build.yml)
+[![Test](https://github.com/your-org/maestro-cli/workflows/Test/badge.svg)](https://github.com/your-org/maestro-cli/actions/workflows/test.yml)
 
 ## Usage
 
@@ -1034,6 +1042,45 @@ go test -v ./tests/...
 3. **Run tests**: `go test ./tests/...` to verify functionality
 4. **Run integration tests**: `./test_integration.sh` for end-to-end validation
 5. **Commit changes** with descriptive commit messages
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+#### Automated Workflows
+
+- **Lint Workflow** (`lint.yml`): Runs code quality checks on every PR and push
+- **Build Workflow** (`build.yml`): Builds the CLI binary and verifies functionality
+- **Test Workflow** (`test.yml`): Runs comprehensive test suites
+- **Main CI Pipeline** (`ci.yml`): Orchestrates all checks in sequence
+
+#### Workflow Triggers
+
+- **Push to main/develop**: Full CI pipeline runs
+- **Pull Requests**: All workflows run to validate changes
+- **Manual Dispatch**: Workflows can be triggered manually from GitHub Actions tab
+
+#### Local Development
+
+To run the same checks locally as the CI pipeline:
+
+```bash
+# Run the complete CI pipeline locally
+./tools/lint.sh && ./build.sh && ./test.sh
+
+# Or run individual steps
+./tools/lint.sh    # Code quality and linting
+./build.sh         # Build and verify binary
+./test.sh          # Run test suite
+```
+
+#### Workflow Features
+
+- **Matrix Testing**: Tests across Go 1.21, 1.22, and 1.23
+- **Cross-Platform**: Builds for Ubuntu, Windows, and macOS
+- **Artifact Upload**: Preserves build artifacts and test results
+- **Parallel Execution**: Individual workflows run in parallel for faster feedback
+- **Sequential Dependencies**: Main CI ensures proper order (lint → build → test)
 
 ### Code Quality Standards
 

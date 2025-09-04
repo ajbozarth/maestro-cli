@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Maestro CLI
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        go-version: ['1.21', '1.22', '1.23']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache: true
+        
+    - name: Make scripts executable
+      run: |
+        chmod +x ./build.sh
+        chmod +x ./test.sh
+        
+    - name: Build maestro CLI
+      run: ./build.sh
+      
+    - name: Test binary functionality
+      run: |
+        ./maestro --version
+        ./maestro --help
+        ./maestro vectordb list --dry-run
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: maestro-cli-${{ matrix.go-version }}
+        path: maestro
+        retention-days: 30
+        
+    - name: Upload build logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs-${{ matrix.go-version }}
+        path: |
+          *.log
+          build-*.txt
+        retention-days: 7
