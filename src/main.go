@@ -6,6 +6,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"maestro/internal/commands"
 )
 
 var (
@@ -116,6 +117,15 @@ A command-line interface for working with Maestro configurations.`,
 	rootCmd.PersistentFlags().StringVar(&mcpServerURI, "mcp-server-uri", "", "MCP server URI (overrides MAESTRO_MCP_SERVER_URI environment variable)")
 
 	// Add resource-based commands
+	rootCmd.AddCommand(
+		commands.NewMermaidCommand(),
+		commands.NewMetaAgentsCommand(),
+		commands.NewCleanCommand(),
+	)
+	rootCmd.AddCommand(agentCmd)
+	rootCmd.AddCommand(workflowCmd)
+	rootCmd.AddCommand(customResourceCmd)
+	rootCmd.AddCommand(metaAgentCmd)
 	rootCmd.AddCommand(vdbCmd)
 	rootCmd.AddCommand(collectionCmd)
 	rootCmd.AddCommand(documentCmd)
@@ -145,6 +155,15 @@ A command-line interface for working with Maestro configurations.`,
 	documentCmd.AddCommand(documentDeleteCmd)
 
 	embeddingCmd.AddCommand(embeddingListCmd)
+
+	agentCmd.AddCommand(commands.NewCreateCommand())
+	agentCmd.AddCommand(commands.NewAgentServeCommand())
+
+	workflowCmd.AddCommand(commands.NewWorkflowServeCommand())
+	workflowCmd.AddCommand(commands.NewRunCommand())
+	workflowCmd.AddCommand(commands.NewDeployCommand())
+
+	customResourceCmd.AddCommand(commands.NewCreateCrCommand())
 
 	// Chunking
 	chunkingCmd.AddCommand(chunkingListCmd)

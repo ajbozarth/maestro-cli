@@ -1110,3 +1110,165 @@ cli/maestro collection info --vdb "Qiskit_studio_algo" --name "Qiskit_studio_alg
 ```
 
 **Note**: The semantic chunking strategy uses sentence-transformers for chunking decisions, while the collection's own embedding model is used for search operations.
+
+## Agent Management
+
+The CLI provides commands for creating and serving AI agents:
+
+### Agent Create Command
+
+```bash
+# Create agents from YAML configuration
+./maestro agent create agent-config.yaml
+
+# Create agents with verbose output
+./maestro agent create agent-config.yaml --verbose
+
+# Create agents with dry-run mode
+./maestro agent create agent-config.yaml --dry-run
+```
+
+Example agent configuration file:
+```yaml
+apiVersion: maestro/v1alpha1
+kind: Agent
+metadata:
+  name: test-agent
+spec:
+  framework: fastapi
+  description: "Test agent for unit tests"
+  model: gpt-4
+  tools:
+    - name: test-tool
+      description: "A test tool"
+```
+
+### Agent Serve Command
+
+```bash
+# Serve an agent from YAML configuration
+./maestro agent serve agent-config.yaml
+
+# Serve an agent with custom port
+./maestro agent serve agent-config.yaml --port=8080
+
+# Serve a specific agent from a multi-agent YAML file
+./maestro agent serve agents-config.yaml --agent-name=my-agent
+
+# Serve an agent with dry-run mode
+./maestro agent serve agent-config.yaml --dry-run
+```
+
+## Workflow Management
+
+The CLI provides commands for running, serving, and deploying workflows that coordinate multiple agents:
+
+### Workflow Run Command
+
+```bash
+# Run a workflow with agents
+./maestro workflow run agent-config.yaml workflow-config.yaml
+
+# Run a workflow with interactive prompt
+./maestro workflow run agent-config.yaml workflow-config.yaml --prompt
+
+# Run a workflow with dry-run mode
+./maestro workflow run agent-config.yaml workflow-config.yaml --dry-run
+```
+
+Example workflow configuration file:
+```yaml
+apiVersion: maestro/v1alpha1
+kind: Workflow
+metadata:
+  name: test-workflow
+spec:
+  template:
+    prompt: "Test prompt"
+  steps:
+    - name: test-step
+      agent: test-agent
+      input: "{{ .prompt }}"
+```
+
+### Workflow Serve Command
+
+```bash
+# Serve a workflow with agents
+./maestro workflow serve agent-config.yaml workflow-config.yaml
+
+# Serve a workflow with custom port
+./maestro workflow serve agent-config.yaml workflow-config.yaml --port=8080
+
+# Serve a workflow with dry-run mode
+./maestro workflow serve agent-config.yaml workflow-config.yaml --dry-run
+```
+
+### Workflow Deploy Command
+
+```bash
+# Deploy a workflow
+./maestro workflow deploy agent-config.yaml workflow-config.yaml
+
+# Deploy a workflow to Kubernetes
+./maestro workflow deploy agent-config.yaml workflow-config.yaml --kubernetes
+
+# Deploy a workflow with Docker
+./maestro workflow deploy agent-config.yaml workflow-config.yaml --docker
+
+# Deploy a workflow with dry-run mode
+./maestro workflow deploy agent-config.yaml workflow-config.yaml --dry-run
+```
+
+## Custom Resource Management
+
+The CLI provides commands for creating Kubernetes custom resources:
+
+### CustomResource Create Command
+
+```bash
+# Create Kubernetes custom resources from YAML
+./maestro customresource create resource-config.yaml
+
+# Create custom resources with dry-run mode
+./maestro customresource create resource-config.yaml --dry-run
+```
+
+The command automatically:
+- Sets the API version to `maestro.ai4quantum.com/v1alpha1`
+- Sanitizes resource names for Kubernetes compatibility
+- Processes workflow-specific fields for proper deployment
+
+## Mermaid Diagram Generation
+
+The CLI provides commands for generating Mermaid diagrams from workflow definitions:
+
+### Mermaid Command
+
+```bash
+# Generate a sequence diagram from a workflow
+./maestro mermaid workflow-config.yaml --sequenceDiagram
+
+# Generate a top-down flowchart from a workflow
+./maestro mermaid workflow-config.yaml --flowchart-td
+
+# Generate a left-right flowchart from a workflow
+./maestro mermaid workflow-config.yaml --flowchart-lr
+```
+
+Example output:
+```
+sequenceDiagram
+    participant User
+    participant System
+    User->>System: Request
+    System->>User: Response
+```
+
+or
+
+```
+flowchart TD
+    A[Start] --> B[Process]
+    B --> C[End]
+```
