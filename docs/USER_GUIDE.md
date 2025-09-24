@@ -11,6 +11,10 @@ Welcome to the Maestro CLI! This guide will help you get started with managing v
 - [Vector Database Management](#vector-database-management)
 - [Collection Management](#collection-management)
 - [Document Management](#document-management)
+- [Agent Management](#agent-management)
+- [Workflow Management](#workflow-management)
+- [Custom Resource Management](#custom-resource-management)
+- [Mermaid Diagram Generation](#mermaid-diagram-generation)
 - [Validation](#validation)
 - [Environment Variables](#environment-variables)
 - [Examples](#examples)
@@ -226,6 +230,230 @@ spec:
 ./maestro document delete my-vector-db my-collection doc-id --verbose
 ```
 
+## Agent Management
+
+The Maestro CLI provides commands for creating and serving AI agents.
+
+### Agent Configuration Schema
+
+Agents are defined using YAML configuration files that follow a specific schema:
+
+```yaml
+apiVersion: maestro/v1alpha1
+kind: Agent
+metadata:
+  name: my-agent
+  labels:
+    app: my-app
+spec:
+  framework: fastapi  # Agent framework (fastapi, etc.)
+  description: "My AI agent"
+  model: gpt-4  # LLM model to use
+  tools:
+    - name: tool-name
+      description: "Tool description"
+```
+
+### Create Agents
+
+```bash
+# Create agents from YAML configuration
+./maestro agent create agent-config.yaml
+
+# Create with verbose output
+./maestro agent create agent-config.yaml --verbose
+
+# Test without creating (dry run)
+./maestro agent create agent-config.yaml --dry-run
+```
+
+### Serve Agents
+
+```bash
+# Serve an agent from YAML configuration
+./maestro agent serve agent-config.yaml
+
+# Serve with custom port
+./maestro agent serve agent-config.yaml --port=8080
+
+# Serve a specific agent from a multi-agent YAML file
+./maestro agent serve agent-config.yaml --agent-name=my-agent
+
+# Test without serving (dry run)
+./maestro agent serve agent-config.yaml --dry-run
+```
+
+## Workflow Management
+
+Workflows allow you to orchestrate multiple agents to work together on complex tasks.
+
+### Workflow Configuration Schema
+
+Workflows are defined using YAML configuration files:
+
+```yaml
+apiVersion: maestro/v1alpha1
+kind: Workflow
+metadata:
+  name: my-workflow
+  labels:
+    app: my-app
+spec:
+  template:
+    prompt: "Initial workflow prompt"
+    agents:
+      - agent-1
+      - agent-2
+    steps:
+      - name: step-1
+        agent: agent-1
+        input: "{{ .prompt }}"
+      - name: step-2
+        agent: agent-2
+        input: "Process the output from step-1: {{ .step-1.output }}"
+    exception:
+      agent: exception-handler-agent
+```
+
+### Run Workflows
+
+```bash
+# Run a workflow with agents
+./maestro workflow run agent-config.yaml workflow-config.yaml
+
+# Run with interactive prompt
+./maestro workflow run agent-config.yaml workflow-config.yaml --prompt
+
+# Test without running (dry run)
+./maestro workflow run agent-config.yaml workflow-config.yaml --dry-run
+```
+
+### Serve Workflows
+
+```bash
+# Serve a workflow with agents
+./maestro workflow serve agent-config.yaml workflow-config.yaml
+
+# Serve with custom port
+./maestro workflow serve agent-config.yaml workflow-config.yaml --port=8080
+
+# Test without serving (dry run)
+./maestro workflow serve agent-config.yaml workflow-config.yaml --dry-run
+```
+
+### Deploy Workflows
+
+```bash
+# Deploy a workflow
+./maestro workflow deploy agent-config.yaml workflow-config.yaml
+
+# Deploy to Kubernetes
+./maestro workflow deploy agent-config.yaml workflow-config.yaml --kubernetes
+
+# Deploy with Docker
+./maestro workflow deploy agent-config.yaml workflow-config.yaml --docker
+
+# Test without deploying (dry run)
+./maestro workflow deploy agent-config.yaml workflow-config.yaml --dry-run
+```
+
+## Custom Resource Management
+
+The Maestro CLI provides commands for creating Kubernetes custom resources for agents and workflows.
+
+### Create Custom Resources
+
+```bash
+# Create Kubernetes custom resources from YAML
+./maestro customresource create resource-config.yaml
+
+# Test without creating (dry run)
+./maestro customresource create resource-config.yaml --dry-run
+```
+
+The command automatically:
+- Sets the API version to `maestro.ai4quantum.com/v1alpha1`
+- Sanitizes resource names for Kubernetes compatibility
+- Processes workflow-specific fields for proper deployment
+
+### Custom Resource Examples
+
+**Agent Custom Resource**:
+```yaml
+kind: Agent
+metadata:
+  name: my-agent
+spec:
+  framework: fastapi
+  description: "My AI agent"
+  model: gpt-4
+  tools:
+    - name: tool-name
+      description: "Tool description"
+```
+
+**Workflow Custom Resource**:
+```yaml
+kind: Workflow
+metadata:
+  name: my-workflow
+  labels:
+    app: my-app
+spec:
+  template:
+    agents:
+      - agent-1
+      - agent-2
+    steps:
+      - name: step-1
+        agent: agent-1
+      - name: parallel-step
+        parallel:
+          - agent-1
+          - agent-2
+```
+
+## Mermaid Diagram Generation
+
+The Maestro CLI provides commands for generating Mermaid diagrams from workflow definitions.
+
+### Generate Mermaid Diagrams
+
+```bash
+# Generate a sequence diagram from a workflow
+./maestro mermaid workflow-config.yaml --sequenceDiagram
+
+# Generate a top-down flowchart from a workflow
+./maestro mermaid workflow-config.yaml --flowchart-td
+
+# Generate a left-right flowchart from a workflow
+./maestro mermaid workflow-config.yaml --flowchart-lr
+```
+
+### Diagram Types
+
+- **Sequence Diagram**: Shows the interaction between agents in a workflow as a sequence of messages
+- **Flowchart TD**: Shows the workflow steps as a top-down flowchart
+- **Flowchart LR**: Shows the workflow steps as a left-right flowchart
+
+### Example Output
+
+**Sequence Diagram**:
+```
+sequenceDiagram
+    participant User
+    participant System
+    User->>System: Request
+    System->>User: Response
+```
+
+**Flowchart**:
+```
+flowchart TD
+    A[Start] --> B[Process]
+    B --> C[End]
+```
+
 ## Validation
 
 ### Validate Configuration Files
@@ -324,6 +552,82 @@ spec:
 
 # Write documents (assuming you have a data.json file)
 ./maestro document write my-vector-db my-documents data.json
+```
+
+### Example 4: Creating and Running an Agent Workflow
+
+1. Create agent configuration file:
+```yaml
+# agent-config.yaml
+apiVersion: maestro/v1alpha1
+kind: Agent
+metadata:
+  name: research-agent
+spec:
+  framework: fastapi
+  description: "Research assistant agent"
+  model: gpt-4
+  tools:
+    - name: search
+      description: "Search for information"
+    - name: summarize
+      description: "Summarize content"
+---
+apiVersion: maestro/v1alpha1
+kind: Agent
+metadata:
+  name: writing-agent
+spec:
+  framework: fastapi
+  description: "Content writing agent"
+  model: gpt-4
+  tools:
+    - name: write
+      description: "Write content"
+```
+
+2. Create workflow configuration file:
+```yaml
+# workflow-config.yaml
+apiVersion: maestro/v1alpha1
+kind: Workflow
+metadata:
+  name: research-workflow
+spec:
+  template:
+    prompt: "Research quantum computing"
+  steps:
+    - name: research
+      agent: research-agent
+      input: "{{ .prompt }}"
+    - name: write
+      agent: writing-agent
+      input: "Write an article based on this research: {{ .research.output }}"
+```
+
+3. Run the workflow:
+```bash
+# Run the workflow
+./maestro workflow run agent-config.yaml workflow-config.yaml
+
+# Run with interactive prompt
+./maestro workflow run agent-config.yaml workflow-config.yaml --prompt
+```
+
+4. Generate a diagram of the workflow:
+```bash
+# Generate a sequence diagram
+./maestro mermaid workflow-config.yaml --sequenceDiagram
+```
+
+5. Deploy to Kubernetes:
+```bash
+# Create Kubernetes custom resources
+./maestro customresource create agent-config.yaml
+./maestro customresource create workflow-config.yaml
+
+# Or deploy the workflow directly
+./maestro workflow deploy agent-config.yaml workflow-config.yaml --kubernetes
 ```
 
 ## Troubleshooting

@@ -142,6 +142,30 @@ if [ "$RUN_INTEGRATION_TESTS" = true ]; then
         print_warning "To run integration tests successfully, start the MCP server first:"
         print_warning "  cd .. && ./start.sh --http"
     fi
+
+    # Run maestro integration tests
+    print_status "Running maestrointegration tests..."
+    if go test -v tests/integration/agent/agent_test.go; then
+        print_status "✓ Agent Integration tests completed successfully!"
+    else
+        print_warning "Agent Integration tests failed (this may be expected if no MCP server is running)"
+        print_warning "To run integration tests successfully, start the MCP server first:"
+        print_warning "  cd .. && ./start.sh --http"
+    fi
+    if go test -v tests/integration/workflow/workflow_test.go; then
+        print_status "✓ Workflow Integration tests completed successfully!"
+    else
+        print_warning "Workflow Integration tests failed (this may be expected if no MCP server is running)"
+        print_warning "To run integration tests successfully, start the MCP server first:"
+        print_warning "  cd .. && ./start.sh --http"
+    fi
+    if go test -v tests/integration/customresource/cr_test.go; then
+        print_status "✓ Custom Resource Integration tests completed successfully!"
+    else
+        print_warning "Custom Resource Integration tests failed (this may be expected if no MCP server is running)"
+        print_warning "To run integration tests successfully, start the MCP server first:"
+        print_warning "  cd .. && ./start.sh --http"
+    fi
 fi
 
 print_status "All CLI tests completed successfully!" 

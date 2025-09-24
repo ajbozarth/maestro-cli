@@ -346,6 +346,45 @@ var chunkingListCmd = &cobra.Command{
 	},
 }
 
+// Agent commands - create, serve
+var agentCmd = &cobra.Command{
+	Use:     "agent",
+	Short:   "Manage agents",
+	Long:    `Manage agent including creating, and serving.`,
+	Aliases: []string{"agent"},
+	Example: `  maestro create agents.yaml
+  maestro agent create agents.yaml`,
+}
+
+// Workflow commands - run, serve, deploy
+var workflowCmd = &cobra.Command{
+	Use:     "workflow",
+	Short:   "Manage workflow",
+	Long:    "Manage workflow including running, serving and deploying.",
+	Aliases: []string{"workflow"},
+	Example: `  maestro workflow run agents.yaml workflow.yaml
+  maestro workflow serve agents.yaml workflow.yaml
+  maestro workflow deploy agents.yaml workflow.yaml`,
+}
+
+// CustomResource commands - create
+var customResourceCmd = &cobra.Command{
+	Use:     "customresource",
+	Short:   "Manage custom resource",
+	Long:    `Manage custom resource including creating.`,
+	Aliases: []string{"cr"},
+	Example: `  maestro customresource create yaml_file.`,
+}
+
+// MetaAgent commands - run
+var metaAgentCmd = &cobra.Command{
+	Use:     "metaagent",
+	Short:   "Manage meta agent",
+	Long:    `Manage meta agent including running.`,
+	Aliases: []string{"metaagent"},
+	Example: `  maestro metaagent run TEXT_FILE.`,
+}
+
 func init() {
 	// Add flags to collection commands
 	collectionListCmd.Flags().String("vdb", "", "Vector database name")
