@@ -211,7 +211,7 @@ func getAvailableCollections(vdbName string) ([]string, error) {
 
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		if line != "" && !strings.HasPrefix(line, "Found") && !strings.HasPrefix(line, "Collections") {
+		if line != "" && line != "[" && line != "]" && !strings.HasPrefix(line, "Found") && !strings.HasPrefix(line, "Collections") {
 			// Extract collection name from the line
 			// Assuming format like "1. collection_name" or just "collection_name"
 			if strings.Contains(line, ". ") {
@@ -220,7 +220,7 @@ func getAvailableCollections(vdbName string) ([]string, error) {
 					collections = append(collections, strings.TrimSpace(parts[1]))
 				}
 			} else {
-				collections = append(collections, line)
+				collections = append(collections, strings.Trim(line, "\""))
 			}
 		}
 	}

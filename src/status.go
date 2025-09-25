@@ -105,14 +105,14 @@ func showStatus(vdbName string) error {
 			var collections []string
 			for _, line := range lines {
 				line = strings.TrimSpace(line)
-				if line != "" && !strings.HasPrefix(line, "Found") && !strings.HasPrefix(line, "Collections") {
+				if line != "" && line != "[" && line != "]" && !strings.HasPrefix(line, "Found") && !strings.HasPrefix(line, "Collections") {
 					if strings.Contains(line, ". ") {
 						parts := strings.SplitN(line, ". ", 2)
 						if len(parts) > 1 {
 							collections = append(collections, strings.TrimSpace(parts[1]))
 						}
 					} else {
-						collections = append(collections, line)
+						collections = append(collections, strings.Trim(line, "\""))
 					}
 				}
 			}
