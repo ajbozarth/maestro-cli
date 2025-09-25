@@ -146,18 +146,64 @@ func (c *CreateCommand) createAgentsFromYAML(agentsYaml []common.YAMLDocument) e
 }
 
 // createMCPToolsFromYAML creates MCP tools from the YAML configuration
-func (c *CreateCommand) createMCPToolsFromYAML(agentsYaml []common.YAMLDocument) error {
-	// In the Python implementation, this calls create_mcptools from maestro.mcptool
-	// We'll need to implement the equivalent functionality in Go
-
+func (c *CreateCommand) createMCPToolsFromYAML(toolsYaml []common.YAMLDocument) error {
 	// For now, we'll just print a message
 	c.Console().Ok("Creating MCP tools from YAML configuration")
 
-	// TODO: Implement the actual MCP tool creation logic
-	// This would involve:
-	// 1. Parsing the tool definitions
-	// 2. Creating the tool instances
-	// 3. Registering them with the system
+	// Get MCP server URI
+	serverURI, err := common.GetMCPServerURI("")
+	// serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
+	if err != nil {
+		if common.Progress != nil {
+			common.Progress.StopWithError("Failed to get MCP server URI")
+		}
+		return err
+	}
+
+	if common.Verbose {
+		fmt.Printf("Connecting to MCP server at: %s\n", serverURI)
+	}
+
+	// Create MCP client
+	client, _ := common.NewMCPClient(serverURI)
+	if err != nil {
+		if common.Progress != nil {
+			common.Progress.StopWithError("Failed to create MCP client")
+		}
+		return err
+	}
+	defer client.Close()
+
+	if common.Progress != nil {
+		common.Progress.Update("Executing create tools...")
+	}
+
+	// Call the run_workflow tool
+	tool_strings, err := common.YamlToString(toolsYaml)
+	if err != nil {
+		fmt.Println("tool file error")
+	}
+
+	params := map[string]interface{}{
+		"tools": tool_strings,
+	}
+
+	result, err := client.CallMCPServer("create_tools", params)
+	if err != nil {
+		if common.Progress != nil {
+			common.Progress.StopWithError("Create tool failed")
+		}
+		return err
+	}
+
+	if common.Progress != nil {
+		common.Progress.Stop("Create tools completed successfully")
+	}
+
+	if !common.Silent {
+		fmt.Println("OK")
+	}
+	fmt.Println(result)
 
 	return nil
 }

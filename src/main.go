@@ -124,6 +124,7 @@ A command-line interface for working with Maestro configurations.`,
 	)
 	rootCmd.AddCommand(agentCmd)
 	rootCmd.AddCommand(workflowCmd)
+	rootCmd.AddCommand(toolCmd)
 	rootCmd.AddCommand(customResourceCmd)
 	rootCmd.AddCommand(metaAgentCmd)
 	rootCmd.AddCommand(vdbCmd)
@@ -162,6 +163,8 @@ A command-line interface for working with Maestro configurations.`,
 	workflowCmd.AddCommand(commands.NewWorkflowServeCommand())
 	workflowCmd.AddCommand(commands.NewRunCommand())
 	workflowCmd.AddCommand(commands.NewDeployCommand())
+
+	toolCmd.AddCommand(commands.NewCreateCommand())
 
 	customResourceCmd.AddCommand(commands.NewCreateCrCommand())
 

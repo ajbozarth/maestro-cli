@@ -352,8 +352,8 @@ var agentCmd = &cobra.Command{
 	Short:   "Manage agents",
 	Long:    `Manage agent including creating, and serving.`,
 	Aliases: []string{"agent"},
-	Example: `  maestro create agents.yaml
-  maestro agent create agents.yaml`,
+	Example: `  maestro agent create agents.yaml
+  maestro agent serve agents.yaml`,
 }
 
 // Workflow commands - run, serve, deploy
@@ -365,6 +365,15 @@ var workflowCmd = &cobra.Command{
 	Example: `  maestro workflow run agents.yaml workflow.yaml
   maestro workflow serve agents.yaml workflow.yaml
   maestro workflow deploy agents.yaml workflow.yaml`,
+}
+
+// Tool commands - create
+var toolCmd = &cobra.Command{
+	Use:     "tool",
+	Short:   "Manage tools",
+	Long:    `Manage tool including creating.`,
+	Aliases: []string{"tool"},
+	Example: `  maestro tool create tools.yaml`,
 }
 
 // CustomResource commands - create
