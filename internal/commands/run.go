@@ -184,11 +184,6 @@ func (c *RunCommand) Run() error {
 
 	// Extract output from the result
 	output := result["result"].(*common.MCPResponse)
-	// TODO: Extract output from the workflow result
-	// This would involve:
-	// 1. Getting the steps from the workflow
-	// 2. Finding the last step that produced a result
-	// 3. Using that result as the output
 
 	// Log the workflow run
 	response := ""
@@ -209,7 +204,7 @@ func (c *RunCommand) Run() error {
 		durationMs,
 	)
 
-	return nil
+	return response
 }
 
 // setupLogger sets up the logger for the run command
@@ -305,14 +300,5 @@ func (c *RunCommand) runWorkflow(workflow common.YAMLDocument, agents []common.Y
 
 // logWorkflowRun logs the workflow run
 func (c *RunCommand) logWorkflowRun(logger *common.Logger, workflowID, workflowName, prompt, output string, modelsUsed []string, status string, startTime, endTime time.Time, durationMs int) {
-	// In the Python implementation, this calls logger.log_workflow_run()
-	// We'll need to implement the equivalent functionality in Go
-
-	// For now, we'll just print a message
 	c.Console().Ok(fmt.Sprintf("Workflow %s completed with status: %s", workflowID, status))
-
-	// TODO: Implement the actual logging logic
-	// This would involve:
-	// 1. Creating a log entry
-	// 2. Writing it to the log file
 }

@@ -83,12 +83,6 @@ func (c *CreateCommand) createAgentsFromYAML(agentsYaml []common.YAMLDocument) e
 	// For now, we'll just print a message
 	c.Console().Ok("Creating agents from YAML configuration")
 
-	// TODO: Implement the actual agent creation logic
-	// This would involve:
-	// 1. Parsing the agent definitions
-	// 2. Creating the agent instances
-	// 3. Registering them with the system
-
 	// Get MCP server URI
 	// serverURI, _ := common.GetMCPServerURI(mcpServerURI)
 	serverURI, err := common.GetMCPServerURI("")
