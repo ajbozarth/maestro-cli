@@ -14,10 +14,13 @@ import (
 type CreateCommand struct {
 	*BaseCommand
 	agentsFile string
+	mcpServerURI string
 }
 
 // NewCreateCommand creates a new create command
 func NewCreateCommand() *cobra.Command {
+	var mcpServerURI string
+
 	cmd := &cobra.Command{
 		Use:   "create AGENTS_FILE",
 		Short: "Create agents from a configuration file",
@@ -29,11 +32,13 @@ func NewCreateCommand() *cobra.Command {
 			createCmd := &CreateCommand{
 				BaseCommand: NewBaseCommand(options),
 				agentsFile:  args[0],
+				mcpServerURI: mcpServerURI,
 			}
 
 			return createCmd.Run()
 		},
 	}
+	cmd.Flags().StringVar(&mcpServerURI, "mcp-server-uri", "", "Maestro MCP server URI (overrides MAESTRO_MAESTRO_MCP_SERVER_URI environment variable)")
 
 	return cmd
 }
@@ -84,8 +89,7 @@ func (c *CreateCommand) createAgentsFromYAML(agentsYaml []common.YAMLDocument) e
 	c.Console().Ok("Creating agents from YAML configuration")
 
 	// Get MCP server URI
-	// serverURI, _ := common.GetMCPServerURI(mcpServerURI)
-	serverURI, err := common.GetMCPServerURI("")
+	serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
 	if err != nil {
 		if common.Progress != nil {
 			common.Progress.StopWithError("Failed to get MCP server URI")

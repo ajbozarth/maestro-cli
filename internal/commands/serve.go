@@ -19,6 +19,7 @@ type AgentServeCommand struct {
 	agentName  string
 	host       string
 	port       int
+	mcpServerURI string
 }
 
 type WorkflowServeCommand struct {
@@ -27,10 +28,12 @@ type WorkflowServeCommand struct {
 	workflowFile string
 	host         string
 	port         int
+	mcpServerURI string
 }
 
 // NewServeCommand creates a new serve command
 func NewAgentServeCommand() *cobra.Command {
+	var mcpServerURI string
 	agentServeCmd := &AgentServeCommand{}
 
 	cmd := &cobra.Command{
@@ -69,6 +72,7 @@ func NewAgentServeCommand() *cobra.Command {
 					return fmt.Errorf("invalid port number: %s", portStr)
 				}
 			}
+			agentServeCmd.mcpServerURI = mcpServerURI
 
 			return agentServeCmd.Run()
 		},
@@ -77,11 +81,13 @@ func NewAgentServeCommand() *cobra.Command {
 	cmd.Flags().String("agent-name", "", "Specific agent name to serve (if multiple in file)")
 	cmd.Flags().String("host", "127.0.0.1", "Host to bind to")
 	cmd.Flags().String("port", "8000", "Port to serve on")
+	cmd.Flags().StringVar(&mcpServerURI, "mcp-server-uri", "", "Maestro MCP server URI (overrides MAESTRO_MAESTRO_MCP_SERVER_URI environment variable)")
 	return cmd
 }
 
 // NewServeCommand creates a new serve command
 func NewWorkflowServeCommand() *cobra.Command {
+	var mcpServerURI string
 	workflowServeCmd := &WorkflowServeCommand{}
 
 	cmd := &cobra.Command{
@@ -116,6 +122,7 @@ func NewWorkflowServeCommand() *cobra.Command {
 					return fmt.Errorf("invalid port number: %s", portStr)
 				}
 			}
+			workflowServeCmd.mcpServerURI = mcpServerURI
 
 			return workflowServeCmd.Run()
 		},
@@ -124,6 +131,7 @@ func NewWorkflowServeCommand() *cobra.Command {
 	cmd.Flags().String("agent-name", "", "Specific agent name to serve (if multiple in file)")
 	cmd.Flags().String("host", "127.0.0.1", "Host to bind to")
 	cmd.Flags().String("port", "8000", "Port to serve on")
+	cmd.Flags().StringVar(&mcpServerURI, "mcp-server-uri", "", "Maestro MCP server URI (overrides MAESTRO_MAESTRO_MCP_SERVER_URI environment variable)")
 	return cmd
 }
 
@@ -159,8 +167,7 @@ func (c *WorkflowServeCommand) serveWorkflow() error {
 	c.Console().Print(fmt.Sprintf("Serving workflow at %s:%d\n", c.host, c.port))
 
 	// Get MCP server URI
-	// serverURI, _ := common.GetMCPServerURI(mcpServerURI)
-	serverURI, err := common.GetMCPServerURI("")
+	serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
 	if err != nil {
 		if common.Progress != nil {
 			common.Progress.StopWithError("Failed to get MCP server URI")
@@ -275,8 +282,7 @@ func (c *AgentServeCommand) getAgentFramework() (string, error) {
 // serveContainerAgent serves a container agent
 func (c *AgentServeCommand) serveContainerAgent() error {
 	// Get MCP server URI
-	// serverURI, _ := common.GetMCPServerURI(mcpServerURI)
-	serverURI, err := common.GetMCPServerURI("")
+	serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
 	if err != nil {
 		if common.Progress != nil {
 			common.Progress.StopWithError("Failed to get MCP server URI")
@@ -362,8 +368,7 @@ func (c *AgentServeCommand) serveContainerAgent() error {
 // serveFastAPIAgent serves a FastAPI agent
 func (c AgentServeCommand) serveFastAPIAgent() error {
 	// Get MCP server URI
-	// serverURI, _ := common.GetMCPServerURI(mcpServerURI)
-	serverURI, err := common.GetMCPServerURI("")
+	serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
 	if err != nil {
 		if common.Progress != nil {
 			common.Progress.StopWithError("Failed to get MCP server URI")

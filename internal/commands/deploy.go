@@ -24,10 +24,12 @@ type DeployCommand struct {
 	streamlit    bool
 	autoPrompt   bool
 	env          []string
+	mcpServerURI string
 }
 
 // NewDeployCommand creates a new deploy command
 func NewDeployCommand() *cobra.Command {
+	var mcpServerURI string
 	deployCmd := &DeployCommand{}
 
 	cmd := &cobra.Command{
@@ -75,6 +77,11 @@ func NewDeployCommand() *cobra.Command {
 				return err
 			}
 
+			deployCmd.mcpServerURI, err = cmd.Flags().GetString("mcp-server-uri")
+			if err != nil {
+				return err
+			}
+
 			return deployCmd.Run()
 		},
 	}
@@ -86,6 +93,7 @@ func NewDeployCommand() *cobra.Command {
 	cmd.Flags().Bool("docker", false, "Deploy to Docker")
 	cmd.Flags().Bool("streamlit", false, "Deploy as Streamlit application (default)")
 	cmd.Flags().Bool("auto-prompt", false, "Run prompt by default if specified")
+	cmd.Flags().StringVar(&mcpServerURI, "mcp-server-uri", "", "Maestro MCP server URI (overrides MAESTRO_MAESTRO_MCP_SERVER_URI environment variable)")
 
 	return cmd
 }
@@ -145,8 +153,7 @@ func (c *DeployCommand) deployToTarget(target string, env string) error {
 	c.Console().Ok("Deploying workflow to Kubernetes")
 
 	// Get MCP server URI
-	// serverURI, _ := common.GetMCPServerURI(mcpServerURI)
-	serverURI, err := common.GetMCPServerURI("")
+	serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
 	if err != nil {
 		if common.Progress != nil {
 			common.Progress.StopWithError("Failed to get MCP server URI")
