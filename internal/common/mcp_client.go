@@ -37,14 +37,6 @@ type MCPError struct {
 	Message string `json:"message"`
 }
 
-// DatabaseInfo represents information about a vector database
-type DatabaseInfo struct {
-	Name          string `json:"name"`
-	Type          string `json:"type"`
-	Collection    string `json:"collection"`
-	DocumentCount int    `json:"document_count"`
-}
-
 // normalizeURL ensures the URL has a protocol prefix and MCP endpoint
 func normalizeURL(url string) string {
 	// If it already has a protocol, just ensure it has the /mcp endpoint
@@ -64,8 +56,8 @@ func normalizeURL(url string) string {
 	return "http://" + url + ":8030/mcp"
 }
 
-// getMCPServerURI gets the MCP server URI from environment variable or command line flag
-func GetMCPServerURI(cmdServerURI string) (string, error) {
+// getMaestroMCPServerURI gets the Maestro MCP server URI from environment variable or command line flag
+func GetMaestroMCPServerURI(cmdServerURI string) (string, error) {
 	// Load .env file if it exists
 	if _, err := os.Stat(".env"); err == nil {
 		if err := godotenv.Load(); err != nil {
@@ -76,10 +68,10 @@ func GetMCPServerURI(cmdServerURI string) (string, error) {
 	var serverURI string
 	if cmdServerURI != "" {
 		serverURI = cmdServerURI
-	} else if envURI := os.Getenv("MAESTRO_KNOWLEDGE_MCP_SERVER_URI"); envURI != "" {
+	} else if envURI := os.Getenv("MAESTRO_MAESTRO_MCP_SERVER_URI"); envURI != "" {
 		serverURI = envURI
 	} else {
-		serverURI = "localhost:8030" // Default
+		serverURI = "localhost:8040" // Default
 	}
 
 	return normalizeURL(serverURI), nil
@@ -225,33 +217,5 @@ func (c *MCPClient) Close() error {
 	if c.client != nil {
 		return c.client.Close()
 	}
-	return nil
-}
-
-// CreateVectorDatabase calls the create_vector_database_tool on the MCP server
-func (c *MCPClient) CreateVectorDatabase(dbName, dbType, collectionName string) error {
-	params := map[string]interface{}{
-		"input": map[string]interface{}{
-			"db_name":         dbName,
-			"db_type":         dbType,
-			"collection_name": collectionName,
-		},
-	}
-
-	response, err := c.CallMCPServer("create_vector_database_tool", params)
-	if err != nil {
-		return err
-	}
-
-	// Check for error in response
-	if response.Error != nil {
-		return fmt.Errorf("MCP server error: %s", response.Error.Message)
-	}
-
-	// The response should be a success message
-	if response.Result == nil {
-		return fmt.Errorf("no response from MCP server (check server at %s)", c.baseURL)
-	}
-
 	return nil
 }

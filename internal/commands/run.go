@@ -19,11 +19,13 @@ type RunCommand struct {
 	agentsFile   string
 	workflowFile string
 	prompt       bool
+	mcpServerURI string
 }
 
 // NewRunCommand creates a new run command
 func NewRunCommand() *cobra.Command {
 	var prompt bool
+	var mcpServerURI string
 
 	cmd := &cobra.Command{
 		Use:   "run [AGENTS_FILE] WORKFLOW_FILE",
@@ -47,6 +49,7 @@ func NewRunCommand() *cobra.Command {
 				agentsFile:   agentsFile,
 				workflowFile: workflowFile,
 				prompt:       prompt,
+				mcpServerURI: mcpServerURI,
 			}
 
 			return runCmd.Run()
@@ -54,6 +57,7 @@ func NewRunCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&prompt, "prompt", false, "Reads a user prompt and executes workflow with it")
+	cmd.Flags().StringVar(&mcpServerURI, "mcp-server-uri", "", "Maestro MCP server URI (overrides MAESTRO_MAESTRO_MCP_SERVER_URI environment variable)")
 
 	return cmd
 }
@@ -184,11 +188,6 @@ func (c *RunCommand) Run() error {
 
 	// Extract output from the result
 	output := result["result"].(*common.MCPResponse)
-	// TODO: Extract output from the workflow result
-	// This would involve:
-	// 1. Getting the steps from the workflow
-	// 2. Finding the last step that produced a result
-	// 3. Using that result as the output
 
 	// Log the workflow run
 	response := ""
@@ -239,8 +238,7 @@ func (c *RunCommand) runWorkflow(workflow common.YAMLDocument, agents []common.Y
 	c.Console().Ok("Running workflow")
 
 	// Get MCP server URI
-	// serverURI, _ := common.GetMCPServerURI(mcpServerURI)
-	serverURI, err := common.GetMCPServerURI("")
+	serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
 	if err != nil {
 		if common.Progress != nil {
 			common.Progress.StopWithError("Failed to get MCP server URI")
@@ -305,14 +303,5 @@ func (c *RunCommand) runWorkflow(workflow common.YAMLDocument, agents []common.Y
 
 // logWorkflowRun logs the workflow run
 func (c *RunCommand) logWorkflowRun(logger *common.Logger, workflowID, workflowName, prompt, output string, modelsUsed []string, status string, startTime, endTime time.Time, durationMs int) {
-	// In the Python implementation, this calls logger.log_workflow_run()
-	// We'll need to implement the equivalent functionality in Go
-
-	// For now, we'll just print a message
 	c.Console().Ok(fmt.Sprintf("Workflow %s completed with status: %s", workflowID, status))
-
-	// TODO: Implement the actual logging logic
-	// This would involve:
-	// 1. Creating a log entry
-	// 2. Writing it to the log file
 }

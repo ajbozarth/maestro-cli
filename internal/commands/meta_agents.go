@@ -79,8 +79,5 @@ func (c *MetaAgentsCommand) runMetaAgents() error {
 		return fmt.Errorf("failed to start meta-agents: %w", err)
 	}
 
-	// Store the process ID for later cleanup
-	// TODO: Store the process ID somewhere for the clean command to use
-
 	return nil
 }
