@@ -1,0 +1,35 @@
+apiVersion: maestro/v1alpha1
+kind: Agent
+metadata:
+  name: containeredagnet1
+  labels:
+    app: test-example
+spec:
+  model: meta-llama/llama-3-1-70b-instruct
+  framework: container
+  mode: remote
+  image: "localhost/container-agent:latest"
+  description: this is a test
+  tools:
+    - code_interpreter
+    - test
+  instructions: print("this is a test.")
+
+---
+
+apiVersion: maestro/v1alpha1
+kind: Agent
+metadata:
+  name: containeredagnet2
+  labels:
+    app: test-example
+spec:
+  model: meta-llama/llama-3-1-70b-instruct
+  framework: container
+  mode: remote
+  image: "localhost/container-agent:latest"
+  description: this is a test
+  tools:
+    - code_interpreter
+    - test
+  instructions: print("this is a test.")

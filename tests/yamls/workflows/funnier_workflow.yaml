@@ -1,0 +1,30 @@
+apiVersion: maestro/v1alpha1
+kind: Workflow
+metadata:
+  name: funnier workflow
+  labels:
+    app: mas-example
+spec:
+  template:
+    metadata:
+      labels:
+        app: mas-example
+    agents:
+      - expert
+      - colleague
+    prompt: Tell me a joke about IBM
+    start: expert
+    steps:
+      - name: expert
+        agent: expert
+        condition:
+        - case: (input.find('funnier') != -1)
+          do: expert
+          default: colleague
+      - name: colleague
+        agent: colleague
+        condition:
+        - if: (input.find('funnier') != -1)
+          then: expert
+          else: end
+      - name: end
