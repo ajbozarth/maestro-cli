@@ -151,8 +151,7 @@ func (c *CreateCommand) createMCPToolsFromYAML(toolsYaml []common.YAMLDocument) 
 	c.Console().Ok("Creating MCP tools from YAML configuration")
 
 	// Get MCP server URI
-	serverURI, err := common.GetMCPServerURI("")
-	// serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
+	serverURI, err := common.GetMaestroMCPServerURI(c.mcpServerURI)
 	if err != nil {
 		if common.Progress != nil {
 			common.Progress.StopWithError("Failed to get MCP server URI")
