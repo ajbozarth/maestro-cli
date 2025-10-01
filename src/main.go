@@ -127,6 +127,7 @@ A command-line interface for working with Maestro configurations.`,
 	rootCmd.AddCommand(customResourceCmd)
 	rootCmd.AddCommand(metaAgentCmd)
 	rootCmd.AddCommand(deprecatedCreateCmd)
+	rootCmd.AddCommand(deprecatedCreateCrCmd)
 	rootCmd.AddCommand(deprecatedRunCmd)
 	rootCmd.AddCommand(deprecatedDeployCmd)
 	rootCmd.AddCommand(deprecatedServeCmd)

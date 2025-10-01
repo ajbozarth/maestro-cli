@@ -407,6 +407,21 @@ var deprecatedCreateCmd = &cobra.Command{
 	},
 }
 
+// Deprecated CreateCr commands - agent/MCPtool
+var deprecatedCreateCrCmd = &cobra.Command{
+	Use:     "create-cr",
+	Short:   "*** Deprecated *** Create-cr",
+	Long:    `*** Deprecated *** Create-cr: Use curomresource create yaml_file.`,
+	Aliases: []string{"create"},
+	Args: cobra.ExactArgs(1),
+	Example: `  maestro agent/tool create-cr yaml_file.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println("***Deprecated Create: Use agent or tool create.***")
+		options := commands.NewCommandOptions(cmd)
+		return commands.DeprecatedCreateCrCommand(args[0], options)
+	},
+}
+
 // Deprecated Run commands - workflow
 var deprecatedRunCmd = &cobra.Command{
 	Use:     "run",
