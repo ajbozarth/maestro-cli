@@ -427,3 +427,38 @@ func (c AgentServeCommand) serveFastAPIAgent() error {
 	return nil
 
 }
+// DeprecatedServeCommand deprecated create command
+func DeprecatedServeCommand(args []string, options *CommandOptions, cmd *cobra.Command) error {
+	agentServeCmd := &AgentServeCommand{}
+	agentServeCmd.BaseCommand = NewBaseCommand(options)
+	agentServeCmd.agentsFile = args[0]
+
+	// Get flag values
+	var err error
+	agentServeCmd.agentName, err = cmd.Flags().GetString("agent-name")
+	if err != nil {
+		return err
+	}
+
+	agentServeCmd.host, err = cmd.Flags().GetString("host")
+	if err != nil {
+		return err
+	}
+
+	portStr, err := cmd.Flags().GetString("port")
+	if err != nil {
+		return err
+	}
+
+	if portStr == "" {
+		agentServeCmd.port = 8001
+	} else {
+		agentServeCmd.port, err = strconv.Atoi(portStr)
+		if err != nil {
+			return fmt.Errorf("invalid port number: %s", portStr)
+		}
+	}
+	agentServeCmd.mcpServerURI = ""
+
+	return agentServeCmd.Run()
+}
