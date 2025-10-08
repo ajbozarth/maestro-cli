@@ -193,3 +193,13 @@ func sanitizeName(name string) string {
 
 	return newName
 }
+
+
+// DeprecatedCreateCommand deprecated create command
+func DeprecatedCreateCrCommand(args0 string, options *CommandOptions) error {
+	createcrCmd := &CreateCrCommand{
+		BaseCommand: NewBaseCommand(options),
+		yamlFile:  args0,
+	}
+	return createcrCmd.Run()
+}

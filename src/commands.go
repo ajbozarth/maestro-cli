@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"maestro/internal/common"
+	"maestro/internal/commands"
 )
 
 // VDB Commands
@@ -383,6 +385,85 @@ var metaAgentCmd = &cobra.Command{
 	Long:    `Manage meta agent including running.`,
 	Aliases: []string{"metaagent"},
 	Example: `  maestro metaagent run TEXT_FILE.`,
+}
+
+// Deprecated Create commands - agent/MCPtool
+var deprecatedCreateCmd = &cobra.Command{
+	Use:     "create",
+	Short:   "*** Deprecated *** Create",
+	Long:    `*** Deprecated *** Create: Use agent or tool create.`,
+	Aliases: []string{"create"},
+	Args: cobra.ExactArgs(1),
+	Example: `  maestro agent/tool create yaml_file.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println("***Deprecated Create: Use agent or tool create.***")
+		defs, _ := common.ParseYAML(args[0])
+		fmt.Println(defs[0]["kind"])
+		if defs[0]["kind"] == "Agent" || defs[0]["kind"] == "MCPTool"{
+			options := commands.NewCommandOptions(cmd)
+			return commands.DeprecatedCreateCommand(args[0], options)
+		}
+		return nil
+	},
+}
+
+// Deprecated CreateCr commands - agent/MCPtool
+var deprecatedCreateCrCmd = &cobra.Command{
+	Use:     "create-cr",
+	Short:   "*** Deprecated *** Create-cr",
+	Long:    `*** Deprecated *** Create-cr: Use curomresource create yaml_file.`,
+	Aliases: []string{"create"},
+	Args: cobra.ExactArgs(1),
+	Example: `  maestro agent/tool create-cr yaml_file.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println("***Deprecated Create: Use agent or tool create.***")
+		options := commands.NewCommandOptions(cmd)
+		return commands.DeprecatedCreateCrCommand(args[0], options)
+	},
+}
+
+// Deprecated Run commands - workflow
+var deprecatedRunCmd = &cobra.Command{
+	Use:     "run",
+	Short:   "*** Deprecated *** Run",
+	Long:    `Deprecated Run: Use workflow run.`,
+	Aliases: []string{"run"},
+	Example: `  maestro workflow run agentyaml_file workflowyaml_file.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println("***Deprecated Run: Use workflow run.***")
+		options := commands.NewCommandOptions(cmd)
+		return commands.DeprecatedRunCommand(args, options)
+	},
+}
+
+// Deprecated Deploy commands - workflow
+var deprecatedDeployCmd = &cobra.Command{
+	Use:     "deploy",
+	Short:   "*** Deprecated *** Deploy",
+	Long:    `*** Deprecated *** Deploy: Use workflow deploy.`,
+	Aliases: []string{"deploy"},
+	Args:  cobra.MinimumNArgs(2),
+	Example: `  maestro deploy agentyaml_file workflowyaml_file.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println("***Deprecated Deploy: Use workflow deploy.***")
+		options := commands.NewCommandOptions(cmd)
+		return commands.DeprecatedDeployCommand(args, options, cmd)
+	},
+}
+
+// Deprecated Deploy commands - workflow
+var deprecatedServeCmd = &cobra.Command{
+	Use:     "serve",
+	Short:   "*** Deprecated *** Serve",
+	Long:    `*** Deprecated *** : Use workflow/agent serve.`,
+	Aliases: []string{"serve"},
+	Args: cobra.ExactArgs(1),
+	Example: `  maestro serve agentyaml_file.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println("***Deprecated Serve: Use workflow serve.***")
+		options := commands.NewCommandOptions(cmd)
+		return commands.DeprecatedServeCommand(args, options, cmd)
+	},
 }
 
 func init() {

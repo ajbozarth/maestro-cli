@@ -161,3 +161,13 @@ func (c *CreateCommand) createMCPToolsFromYAML(agentsYaml []common.YAMLDocument)
 
 	return nil
 }
+
+// DeprecatedCreateCommand deprecated create command
+func DeprecatedCreateCommand(args0 string, options *CommandOptions) error {
+	createCmd := &CreateCommand{
+		BaseCommand: NewBaseCommand(options),
+		agentsFile:  args0,
+		mcpServerURI: "",
+	}
+	return createCmd.Run()
+}

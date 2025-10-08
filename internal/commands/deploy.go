@@ -217,3 +217,51 @@ func (c *DeployCommand) deployToTarget(target string, env string) error {
 
 	return nil
 }
+
+// DeprecatedDeployCommand deprecated create command
+func DeprecatedDeployCommand(args []string, options *CommandOptions, cmd *cobra.Command) error {
+	deployCmd := &DeployCommand{}
+	deployCmd.BaseCommand = NewBaseCommand(options)
+	deployCmd.agentsFile = args[0]
+	deployCmd.workflowFile = args[1]
+	deployCmd.env = args[2:]
+
+	// Get flag values
+	var err error
+	deployCmd.url, err = cmd.Flags().GetString("url")
+	if err != nil {
+		return err
+	}
+
+	deployCmd.k8s, err = cmd.Flags().GetBool("k8s")
+	if err != nil {
+		return err
+	}
+
+	deployCmd.kubernetes, err = cmd.Flags().GetBool("kubernetes")
+	if err != nil {
+		return err
+	}
+
+	deployCmd.docker, err = cmd.Flags().GetBool("docker")
+	if err != nil {
+		return err
+	}
+
+	deployCmd.streamlit, err = cmd.Flags().GetBool("streamlit")
+	if err != nil {
+		return err
+	}
+
+	deployCmd.autoPrompt, err = cmd.Flags().GetBool("auto-prompt")
+	if err != nil {
+		return err
+	}
+
+	deployCmd.mcpServerURI, err = cmd.Flags().GetString("mcp-server-uri")
+	if err != nil {
+		return err
+	}
+
+	return deployCmd.Run()
+}

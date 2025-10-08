@@ -126,6 +126,11 @@ A command-line interface for working with Maestro configurations.`,
 	rootCmd.AddCommand(workflowCmd)
 	rootCmd.AddCommand(customResourceCmd)
 	rootCmd.AddCommand(metaAgentCmd)
+	rootCmd.AddCommand(deprecatedCreateCmd)
+	rootCmd.AddCommand(deprecatedCreateCrCmd)
+	rootCmd.AddCommand(deprecatedRunCmd)
+	rootCmd.AddCommand(deprecatedDeployCmd)
+	rootCmd.AddCommand(deprecatedServeCmd)
 	rootCmd.AddCommand(vdbCmd)
 	rootCmd.AddCommand(collectionCmd)
 	rootCmd.AddCommand(documentCmd)
@@ -136,6 +141,19 @@ A command-line interface for working with Maestro configurations.`,
 	rootCmd.AddCommand(resyncCmd)
 	rootCmd.AddCommand(validateCmd)
 	rootCmd.AddCommand(statusCmd)
+
+	// Add flags
+	deprecatedDeployCmd.Flags().String("url", "127.0.0.1:5000", "The deployment URL")
+	deprecatedDeployCmd.Flags().Bool("k8s", false, "Deploy to Kubernetes")
+	deprecatedDeployCmd.Flags().Bool("kubernetes", false, "Deploy to Kubernetes")
+	deprecatedDeployCmd.Flags().Bool("docker", false, "Deploy to Docker")
+	deprecatedDeployCmd.Flags().Bool("streamlit", false, "Deploy as Streamlit application (default)")
+	deprecatedDeployCmd.Flags().Bool("auto-prompt", false, "Run prompt by default if specified")
+	deprecatedDeployCmd.Flags().StringVar(&mcpServerURI, "mcp-server-uri", "", "Maestro MCP server URI (overrides MAESTRO_MAESTRO_MCP_SERVER_URI environment variable)")
+	deprecatedServeCmd.Flags().String("agent-name", "", "Specific agent name to serve (if multiple in file)")
+	deprecatedServeCmd.Flags().String("host", "127.0.0.1", "Host to bind to")
+	deprecatedServeCmd.Flags().String("port", "8000", "Port to serve on")
+	deprecatedServeCmd.Flags().StringVar(&mcpServerURI, "mcp-server-uri", "", "Maestro MCP server URI (overrides MAESTRO_MAESTRO_MCP_SERVER_URI environment variable)")
 
 	// Add completion command
 	AddCompletionCommand(rootCmd)

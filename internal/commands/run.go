@@ -305,3 +305,25 @@ func (c *RunCommand) runWorkflow(workflow common.YAMLDocument, agents []common.Y
 func (c *RunCommand) logWorkflowRun(logger *common.Logger, workflowID, workflowName, prompt, output string, modelsUsed []string, status string, startTime, endTime time.Time, durationMs int) {
 	c.Console().Ok(fmt.Sprintf("Workflow %s completed with status: %s", workflowID, status))
 }
+
+// DeprecatedRunCommand deprecated create command
+func DeprecatedRunCommand(args []string, options *CommandOptions) error {
+	var agentsFile, workflowFile string
+	if len(args) == 1 {
+		agentsFile = ""
+		workflowFile = args[0]
+	} else if len(args) == 2 {
+		agentsFile = args[0]
+		workflowFile = args[1]
+	}
+
+	runCmd := &RunCommand{
+		BaseCommand:  NewBaseCommand(options),
+		agentsFile:   agentsFile,
+		workflowFile: workflowFile,
+		prompt:       false,
+		mcpServerURI: "",
+	}
+
+	return runCmd.Run()
+}
