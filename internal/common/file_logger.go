@@ -10,7 +10,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -50,7 +54,8 @@ func generateUUID() string {
 
 // FileLogger handles logging of workflow and agent activities to files
 type FileLogger struct {
-	LogDir string
+	LogDir  string
+	loggers map[string]*zap.Logger // Map of workflow IDs to loggers
 }
 
 // NewFileLogger creates a new FileLogger instance
@@ -66,8 +71,70 @@ func NewFileLogger(logDir string) (*FileLogger, error) {
 	}
 
 	return &FileLogger{
-		LogDir: dir,
+		LogDir:  dir,
+		loggers: make(map[string]*zap.Logger),
 	}, nil
+}
+
+// createLogger creates a new zap logger for a specific workflow
+func (l *FileLogger) createLogger(workflowID string) (*zap.Logger, error) {
+	logPath := filepath.Join(l.LogDir, fmt.Sprintf("maestro_run_%s.jsonl", workflowID))
+
+	// Create encoder config for JSON format
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:        "timestamp",
+		LevelKey:       zapcore.OmitKey, // Omit log level as it's not in original format
+		NameKey:        zapcore.OmitKey,
+		CallerKey:      zapcore.OmitKey,
+		FunctionKey:    zapcore.OmitKey,
+		MessageKey:     zapcore.OmitKey, // We'll use custom fields instead of message
+		StacktraceKey:  zapcore.OmitKey,
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeDuration: zapcore.MillisDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	}
+
+	// Create file for logging
+	file, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open log file: %w", err)
+	}
+
+	// Create core with JSON encoder and file writer
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig),
+		zapcore.AddSync(file),
+		zap.InfoLevel,
+	)
+
+	// Create logger
+	return zap.New(core), nil
+}
+
+// getLogger gets or creates a logger for the specified workflow
+func (l *FileLogger) getLogger(workflowID string) (*zap.Logger, error) {
+	if logger, ok := l.loggers[workflowID]; ok {
+		return logger, nil
+	}
+
+	logger, err := l.createLogger(workflowID)
+	if err != nil {
+		return nil, err
+	}
+
+	l.loggers[workflowID] = logger
+	return logger, nil
+}
+
+// Close closes all loggers and releases resources
+func (l *FileLogger) Close() {
+	for _, logger := range l.loggers {
+		// Sync ensures all buffered logs are written
+		_ = logger.Sync()
+	}
+	l.loggers = make(map[string]*zap.Logger)
 }
 
 // GenerateWorkflowID generates a unique workflow ID
@@ -76,7 +143,9 @@ func (l *FileLogger) GenerateWorkflowID() string {
 }
 
 // writeJSONLine writes a JSON line to the specified log file
+// Kept for backward compatibility with tests
 func (l *FileLogger) writeJSONLine(logPath string, data interface{}) error {
+	// For backward compatibility with tests, use the direct file approach
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
@@ -95,6 +164,96 @@ func (l *FileLogger) writeJSONLine(logPath string, data interface{}) error {
 		return fmt.Errorf("failed to write newline to log file: %w", err)
 	}
 
+	return nil
+}
+
+// writeJSONLineWithZap writes a JSON line to the specified log file using zap
+// This is an internal method used by the new implementation
+func (l *FileLogger) writeJSONLineWithZap(logPath string, data interface{}) error {
+	// Extract the workflow ID from the log path
+	base := filepath.Base(logPath)
+	// Expected format: maestro_run_{workflowID}.jsonl
+	workflowID := ""
+	prefix := "maestro_run_"
+	suffix := ".jsonl"
+
+	if len(base) > len(prefix) && strings.HasPrefix(base, prefix) && strings.HasSuffix(base, suffix) {
+		workflowID = base[len(prefix) : len(base)-len(suffix)]
+	} else {
+		// If we can't extract the workflow ID, create a temporary logger
+		encoderConfig := zapcore.EncoderConfig{
+			TimeKey:        "timestamp",
+			LevelKey:       zapcore.OmitKey,
+			NameKey:        zapcore.OmitKey,
+			CallerKey:      zapcore.OmitKey,
+			FunctionKey:    zapcore.OmitKey,
+			MessageKey:     zapcore.OmitKey,
+			StacktraceKey:  zapcore.OmitKey,
+			LineEnding:     zapcore.DefaultLineEnding,
+			EncodeLevel:    zapcore.LowercaseLevelEncoder,
+			EncodeTime:     zapcore.ISO8601TimeEncoder,
+			EncodeDuration: zapcore.MillisDurationEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+		}
+
+		file, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open log file: %w", err)
+		}
+		defer file.Close()
+
+		core := zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.AddSync(file),
+			zap.InfoLevel,
+		)
+
+		logger := zap.New(core)
+		defer logger.Sync()
+
+		// Convert data to zap fields
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			return fmt.Errorf("failed to marshal JSON: %w", err)
+		}
+
+		var fields map[string]interface{}
+		if err := json.Unmarshal(jsonData, &fields); err != nil {
+			return fmt.Errorf("failed to unmarshal JSON: %w", err)
+		}
+
+		zapFields := make([]zap.Field, 0, len(fields))
+		for k, v := range fields {
+			zapFields = append(zapFields, zap.Any(k, v))
+		}
+
+		logger.Info("", zapFields...)
+		return nil
+	}
+
+	// Get or create a logger for this workflow
+	logger, err := l.getLogger(workflowID)
+	if err != nil {
+		return err
+	}
+
+	// Convert data to zap fields
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+
+	var fields map[string]interface{}
+	if err := json.Unmarshal(jsonData, &fields); err != nil {
+		return fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
+	zapFields := make([]zap.Field, 0, len(fields))
+	for k, v := range fields {
+		zapFields = append(zapFields, zap.Any(k, v))
+	}
+
+	logger.Info("", zapFields...)
 	return nil
 }
 

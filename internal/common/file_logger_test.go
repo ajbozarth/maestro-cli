@@ -54,6 +54,10 @@ func TestNewFileLogger(t *testing.T) {
 		if logger.LogDir != tempDir {
 			t.Errorf("Expected LogDir to be %s, got %s", tempDir, logger.LogDir)
 		}
+		// Check that loggers map is initialized
+		if logger.loggers == nil {
+			t.Error("Expected loggers map to be initialized")
+		}
 	})
 
 	// Test with default log directory
@@ -124,6 +128,7 @@ func TestGenerateWorkflowID(t *testing.T) {
 		if ids[id] {
 			t.Errorf("Generated duplicate ID: %s", id)
 		}
+
 		ids[id] = true
 	}
 }
@@ -475,3 +480,89 @@ func TestLogWorkflowRun(t *testing.T) {
 }
 
 // Made with Bob
+
+func TestGetLogger(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir, err := os.MkdirTemp("", "file_logger_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	logger, err := NewFileLogger(tempDir)
+	if err != nil {
+		t.Fatalf("NewFileLogger failed: %v", err)
+	}
+	defer logger.Close() // Clean up resources
+
+	// Test getting a new logger
+	t.Run("GetNewLogger", func(t *testing.T) {
+		workflowID := "test-workflow"
+		zapLogger, err := logger.getLogger(workflowID)
+		if err != nil {
+			t.Fatalf("getLogger failed: %v", err)
+		}
+		if zapLogger == nil {
+			t.Error("Expected non-nil logger")
+		}
+
+		// Check that logger was cached
+		if cachedLogger, ok := logger.loggers[workflowID]; !ok || cachedLogger != zapLogger {
+			t.Error("Logger was not properly cached")
+		}
+	})
+
+	// Test getting an existing logger
+	t.Run("GetExistingLogger", func(t *testing.T) {
+		workflowID := "test-workflow-2"
+		firstLogger, err := logger.getLogger(workflowID)
+		if err != nil {
+			t.Fatalf("First getLogger failed: %v", err)
+		}
+
+		secondLogger, err := logger.getLogger(workflowID)
+		if err != nil {
+			t.Fatalf("Second getLogger failed: %v", err)
+		}
+
+		if firstLogger != secondLogger {
+			t.Error("Expected same logger instance to be returned")
+		}
+	})
+}
+
+func TestClose(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir, err := os.MkdirTemp("", "file_logger_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	logger, err := NewFileLogger(tempDir)
+	if err != nil {
+		t.Fatalf("NewFileLogger failed: %v", err)
+	}
+
+	// Create some loggers
+	workflowIDs := []string{"workflow1", "workflow2", "workflow3"}
+	for _, id := range workflowIDs {
+		_, err := logger.getLogger(id)
+		if err != nil {
+			t.Fatalf("Failed to get logger for %s: %v", id, err)
+		}
+	}
+
+	// Verify loggers exist
+	if len(logger.loggers) != len(workflowIDs) {
+		t.Errorf("Expected %d loggers, got %d", len(workflowIDs), len(logger.loggers))
+	}
+
+	// Close loggers
+	logger.Close()
+
+	// Verify loggers map is empty
+	if len(logger.loggers) != 0 {
+		t.Errorf("Expected empty loggers map after Close, got %d entries", len(logger.loggers))
+	}
+}
