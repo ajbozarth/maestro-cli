@@ -1220,6 +1220,52 @@ spec:
 ./maestro workflow deploy agent-config.yaml workflow-config.yaml --dry-run
 ```
 
+## Tool Management
+
+The Maestro CLI provides commands for creating Tools for agents.
+
+### Create Tool
+
+```bash
+# Create tool from YAML
+./maestro tool create tool-config.yaml
+
+# Test without creating (dry run)
+./maestro tool create tool-config.yaml --dry-run
+```
+
+The command automatically:
+- Sets the API version to `maestro.ai4quantum.com/v1alpha1`
+- Sanitizes resource names for Kubernetes compatibility
+- Processes workflow-specific fields for proper deployment
+
+### Tool Examples
+Tool example defined in yaml format is: 
+```yaml
+apiVersion: maestro/v1alpha1
+kind: MCPTool
+metadata:
+  name: fetch
+  namespace:  default
+spec:
+  image: ghcr.io/stackloklabs/gofetch/server:latest
+  transport: streamable-http
+```
+The syntax of the agent definition is defined in the [json schema](https://github.com/AI4quantum/maestro/blob/main/schemas/tool_schema.json).
+The schema is same as ToolHive CRD definition except `apiVersion` and `kind`.
+Maestro deploy MCP servers for the defined tools.  The available tools are listed by [ToolHive `thv list`](https://docs.stacklok.com/toolhive/reference/cli/thv_list) command.
+
+- **apiVersion**: version of agent definition format.  This must be `maestro/v1alpha1` now.
+- **kind**: type of object. `MCPTool` for agent definition
+- **metadata**:
+  - **name**: name of tool
+  - **labels**: array of key, value pairs. This is optional and can be used to associate any information to this agent 
+- **spec**:
+  - **image**: Image is the container image for the MCP server.  The image location is in [`thv registry info [server] [flags]`](https://docs.stacklok.com/toolhive/reference/cli/thv_registry_info) output
+  - **transport**: Transport is the transport method for the MCP server (stdio, streamable-http, sse)
+
+The full schema is documeted in [ToolHive Docs](https://docs.stacklok.com/toolhive/reference/crd-spec)
+
 ## Custom Resource Management
 
 The CLI provides commands for creating Kubernetes custom resources:
