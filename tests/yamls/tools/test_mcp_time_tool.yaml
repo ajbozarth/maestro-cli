@@ -1,0 +1,21 @@
+apiVersion: maestro/v1alpha1
+kind: MCPTool
+metadata:
+  name: time
+  namespace:  default
+spec:
+  image: mcp/time:latest
+  transport: stdio
+  port: 30051
+  permissionProfile:
+    type: builtin
+    name: network
+  resources:
+    limits:
+      cpu: '100m'
+      memory: '128Mi'
+    requests:
+      cpu: '50m'
+      memory: '64Mi'
+
+

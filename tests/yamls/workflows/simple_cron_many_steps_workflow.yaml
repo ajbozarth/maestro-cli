@@ -1,0 +1,35 @@
+apiVersion: maestro/v1
+kind: Workflow
+metadata:
+  name: simple cron workflow (many steps)
+  labels:
+    app: cron-example    
+spec:
+  template:
+    metadata:
+      name: cron-example
+      labels:
+        app: cron
+        use-case: test
+    event:
+       cron: "* * * * *"
+       name: multi step cron
+       steps:
+         - step2
+         - step1
+       exit: (input.get("final_prompt").find("This is a test input") != -1)
+    agents:
+        - test5
+        - test2
+        - test3
+    prompt: This is a test input
+    exception:
+        name: step2
+        agent: test2
+    steps:
+      - name: step2
+        agent: test2
+      - name: step1
+        agent: test5
+      - name: step3
+        agent: test3

@@ -1,0 +1,11 @@
+apiVersion: maestro/v1alpha1
+kind: MCPTool
+metadata:
+  name: remote-maestro-k
+  namespace: default
+spec:
+  url: "http://localhost:30051/mcp" 
+  transport: streamable-http
+  name: remotemaestrokserver
+  description: remote maestro-k MCP server
+

@@ -1,0 +1,36 @@
+apiVersion: maestro/v1
+kind: Workflow
+metadata:
+  name: simple cron workflow
+  labels:
+    app: cron-example    
+spec:
+  template:
+    metadata:
+      name: cron-example
+      labels:
+        app: cron
+        use-case: test
+    event:
+       cron: "10 14 * * 1"
+       name: cron event
+       agent: test4
+       exit: ( "test" in input  )
+    agents:
+        - test1
+        - test2
+        - test3
+        - test4
+    prompt: This is a test input
+    exception:
+        name: step2
+        agent: test2
+    steps:
+      - name: step1
+        agent: test2
+      - name: step2
+        agent: test2
+      - name: step3
+        agent: test3
+      - name: step4
+        agent: test1
