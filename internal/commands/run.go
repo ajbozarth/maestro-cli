@@ -20,6 +20,7 @@ type RunCommand struct {
 	workflowFile string
 	prompt       bool
 	mcpServerURI string
+	logger       common.FileLogger
 }
 
 // NewRunCommand creates a new run command
@@ -43,6 +44,7 @@ func NewRunCommand() *cobra.Command {
 				agentsFile = args[0]
 				workflowFile = args[1]
 			}
+			filelogger, _ := common.NewFileLogger("")
 
 			runCmd := &RunCommand{
 				BaseCommand:  NewBaseCommand(options),
@@ -50,6 +52,7 @@ func NewRunCommand() *cobra.Command {
 				workflowFile: workflowFile,
 				prompt:       prompt,
 				mcpServerURI: mcpServerURI,
+				logger:       *filelogger,
 			}
 
 			return runCmd.Run()
@@ -304,6 +307,18 @@ func (c *RunCommand) runWorkflow(workflow common.YAMLDocument, agents []common.Y
 // logWorkflowRun logs the workflow run
 func (c *RunCommand) logWorkflowRun(logger *common.Logger, workflowID, workflowName, prompt, output string, modelsUsed []string, status string, startTime, endTime time.Time, durationMs int) {
 	c.Console().Ok(fmt.Sprintf("Workflow %s completed with status: %s", workflowID, status))
+
+	c.logger.LogWorkflowRun(
+		workflowID,
+		workflowName,
+		prompt,
+		output,
+		modelsUsed,
+		status,
+		&startTime,
+		&endTime,
+		int64(durationMs),
+	)
 }
 
 // DeprecatedRunCommand deprecated create command
